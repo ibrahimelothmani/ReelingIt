@@ -1,9 +1,20 @@
 package main
 
 import (
-	"net/http"
 	"log"
+	"net/http"
+	"github.com/ibrahimelothmani/ReelingIt/logger"
 )
+
+func initializeLogger() *logger.Logger {
+	logInstance, err := logger.NewLogger("movie.log")
+	logInstance.Error("Hello from the Error system", nil)
+	if err != nil {
+		log.Fatalf("Failed to initialize logger: %v", err)
+	}
+	defer logInstance.Close()
+	return logInstance
+}
 
 func main() {
     // Serve static files
