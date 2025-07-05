@@ -2,15 +2,17 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
+	"github.com/ibrahimelothmani/ReelingIt/logger"
 	"github.com/ibrahimelothmani/ReelingIt/models"
 )
 
-type MovieHandler struct{}
+type MovieHandler struct {
+	logger  *logger.Logger
+}
 
-func (h *MovieHandler) GetTopMovies(w http.ResponseWriter, r http.Request) {
+func (h *MovieHandler) GetTopMovies(w http.ResponseWriter, r *http.Request) {
 	movies := []models.Movie{
 		{
 			ID:      1,
@@ -25,9 +27,11 @@ func (h *MovieHandler) GetTopMovies(w http.ResponseWriter, r http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	
-	if err :=json.NewEncoder(w).Encode(movies); err != nil {
+
+	if err := json.NewEncoder(w).Encode(movies); err != nil {
 		// TODO : LOG ERROR
-		fmt.Println("ERROR...")
+		// fmt.Println("ERROR...")
+		http.Error(w, "Internal Server ERROR", http.StatusInternalServerError)
 	}
+
 }
