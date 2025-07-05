@@ -17,6 +17,8 @@ func initializeLogger() *logger.Logger {
 }
 
 func main() {
+
+    logInstance := initializeLogger()
     // Serve static files
     http.Handle("/", http.FileServer(http.Dir("public/index.html")))
 
@@ -24,5 +26,6 @@ func main() {
     const addr = ":8080"
     if err := http.ListenAndServe(addr, nil); err != nil {
         log.Fatalf("Server failed: %v", err)
+        logInstance.Error("Server failed", err)
     }
 }
