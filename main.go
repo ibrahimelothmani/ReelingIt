@@ -1,11 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/ibrahimelothmani/ReelingIt/handlers"
 	"github.com/ibrahimelothmani/ReelingIt/logger"
+	"github.com/joho/godotenv"
 )
 
 func initializeLogger() *logger.Logger {
@@ -20,8 +23,25 @@ func initializeLogger() *logger.Logger {
 
 func main() {
 
+	// Log Initializer
 	logInstance := initializeLogger()
 
+	// Database Initializer
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("No .env file was available")
+	}
+
+	dbConnStr := os.Getenv("DATABASE_URL")
+	if dbConnStr == "" {
+		log.Fatal("DATABASE_URL not set")
+	}
+	db, err := sql.Open("postgres", dbConnStr)
+	if err != nil {
+		log.Fatalf("Failed to connect to the DB: %v", err)
+	}
+	defer db.Close()
+
+	// Movie Handler
 	movieHandler := handlers.MovieHandler{}
 
 	http.HandleFunc("/api/movies/top", movieHandler.GetTopMovies)
