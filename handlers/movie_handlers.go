@@ -9,7 +9,18 @@ import (
 )
 
 type MovieHandler struct {
-	logger  *logger.Logger
+	logger *logger.Logger
+}
+
+func (h *MovieHandler) writeJSONResponse(w http.ResponseWriter, data interface{}) {
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		// TODO : LOG ERROR
+		// fmt.Println("ERROR...")
+		http.Error(w, "Internal Server ERROR", http.StatusInternalServerError)
+	}
 }
 
 func (h *MovieHandler) GetTopMovies(w http.ResponseWriter, r *http.Request) {
@@ -26,12 +37,22 @@ func (h *MovieHandler) GetTopMovies(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	h.writeJSONResponse(w, movies)
 
-	if err := json.NewEncoder(w).Encode(movies); err != nil {
-		// TODO : LOG ERROR
-		// fmt.Println("ERROR...")
-		http.Error(w, "Internal Server ERROR", http.StatusInternalServerError)
+}
+
+func (h *MovieHandler) GetRandomMovies(w http.ResponseWriter, r *http.Request) {
+	movies := []models.Movie{
+		{
+			ID:      1,
+			TMDB_ID: 1000,
+			Title:   "Hero",
+		},
+		{
+			ID:      2,
+			TMDB_ID: 2000,
+			Title:   "Hero",
+		},
 	}
-
+	h.writeJSONResponse(w, movies)
 }
