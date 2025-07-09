@@ -49,6 +49,9 @@ func main() {
 		log.Fatalf("Failed to initialize repository")
 	}
 
+	// Serve static files
+	http.Handle("/", http.FileServer(http.Dir("public")))
+
 	// Movie List Handler
 	movieHandler := handlers.NewMovieHandler(movieRepo, logInstance)
 
@@ -57,8 +60,6 @@ func main() {
 	http.HandleFunc("/api/movies/search", movieHandler.SearchMovies)
 	http.HandleFunc("/api/movies/", movieHandler.GetMovie)
 	http.HandleFunc("/api/genres", movieHandler.GetGenres)
-	// Serve static files
-	http.Handle("/", http.FileServer(http.Dir("public/index.html")))
 
 	// Start server
 	const addr = ":8080"
