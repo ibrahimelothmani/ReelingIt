@@ -8,6 +8,7 @@ import (
 
 	"github.com/ibrahimelothmani/ReelingIt/handlers"
 	"github.com/ibrahimelothmani/ReelingIt/logger"
+	"github.com/ibrahimelothmani/ReelingIt/providers"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -42,11 +43,20 @@ func main() {
 	}
 	defer db.Close()
 
-	// Movie Handler
-	movieHandler := handlers.MovieHandler{}
+	// Initialize Data Repository For Movie
+	movieRepo, err := providers.NewMovieRepository(db, logInstance)
+	if err != nil {
+		log.Fatalf("Failed to initialize repository")
+	}
+
+	// Movie List Handler
+	movieHandler := handlers.NewMovieHandler(movieRepo, logInstance)
 
 	http.HandleFunc("/api/movies/top", movieHandler.GetTopMovies)
 	http.HandleFunc("/api/movies/random", movieHandler.GetRandomMovies)
+	http.HandleFunc("/api/movies/search", movieHandler.SearchMovies)
+	http.HandleFunc("/api/movies/", movieHandler.GetMovie)
+	http.HandleFunc("/api/genres", movieHandler.GetGenres)
 	// Serve static files
 	http.Handle("/", http.FileServer(http.Dir("public/index.html")))
 
