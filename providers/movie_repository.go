@@ -7,7 +7,7 @@ import (
 
 	"github.com/ibrahimelothmani/ReelingIt/logger"
 	"github.com/ibrahimelothmani/ReelingIt/models"
-	
+
 	_ "github.com/lib/pq"
 )
 

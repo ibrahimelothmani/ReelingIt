@@ -48,7 +48,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize repository")
 	}
-
 	// Serve static files
 	http.Handle("/", http.FileServer(http.Dir("public")))
 
