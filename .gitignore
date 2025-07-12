@@ -1,1 +1,4 @@
 db-data
+.env
+movie-log
+build-errors.log
