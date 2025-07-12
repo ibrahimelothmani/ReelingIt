@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -25,10 +26,8 @@ func initializeLogger() *logger.Logger {
 
 func main() {
 
-	// Log Initializer
 	logInstance := initializeLogger()
 
-	// Database Initializer
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("No .env file was available")
 	}
@@ -43,27 +42,51 @@ func main() {
 	}
 	defer db.Close()
 
-	// Initialize Data Repository For Movie
 	movieRepo, err := providers.NewMovieRepository(db, logInstance)
 	if err != nil {
 		log.Fatalf("Failed to initialize repository")
 	}
-	// Serve static files
-	http.Handle("/", http.FileServer(http.Dir("public")))
 
-	// Movie List Handler
+	accountRepo, err := providers.NewAccountRepository(db, logInstance)
+	if err != nil {
+		log.Fatalf("Failed to initialize account repository: %v", err)
+	}
+
 	movieHandler := handlers.NewMovieHandler(movieRepo, logInstance)
+	accountHandler := handlers.NewAccountHandler(accountRepo, logInstance)
 
 	http.HandleFunc("/api/movies/top", movieHandler.GetTopMovies)
 	http.HandleFunc("/api/movies/random", movieHandler.GetRandomMovies)
 	http.HandleFunc("/api/movies/search", movieHandler.SearchMovies)
 	http.HandleFunc("/api/movies/", movieHandler.GetMovie)
 	http.HandleFunc("/api/genres", movieHandler.GetGenres)
+	http.HandleFunc("/api/account/register", accountHandler.Register)
+	http.HandleFunc("/api/account/authenticate", accountHandler.Authenticate)
 
-	// Start server
+	http.Handle("/api/account/favorites/",
+		accountHandler.AuthMiddleware(http.HandlerFunc(accountHandler.GetFavorites)))
+
+	http.Handle("/api/account/watchlist/",
+		accountHandler.AuthMiddleware(http.HandlerFunc(accountHandler.GetWatchlist)))
+
+	http.Handle("/api/account/save-to-collection/",
+		accountHandler.AuthMiddleware(http.HandlerFunc(accountHandler.SaveToCollection)))
+
+	catchAllHandler := func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./public/index.html")
+	}
+	http.HandleFunc("/movies", catchAllHandler)
+	http.HandleFunc("/movies/", catchAllHandler)
+	http.HandleFunc("/account/", catchAllHandler)
+
+	http.Handle("/", http.FileServer(http.Dir("public")))
+	fmt.Println("Server is running on http://localhost:8080")
+
 	const addr = ":8080"
-	if err := http.ListenAndServe(addr, nil); err != nil {
+	err = http.ListenAndServe(addr, nil)
+	if err != nil {
 		log.Fatalf("Server failed: %v", err)
 		logInstance.Error("Server failed", err)
 	}
+
 }
